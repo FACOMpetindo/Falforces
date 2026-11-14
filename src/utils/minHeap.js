@@ -13,6 +13,7 @@ class MinHeap {
 	}
 
 	pop() {
+		if (!this.heap.length) return undefined
 		if (this.heap.length === 1) return this.heap.pop()
 		const top = this.heap[0]
 		this.heap[0] = this.heap.pop()
@@ -21,7 +22,7 @@ class MinHeap {
 	}
 
 	remove(id) {
-		this.heap = this.heap.filter((item) => item.contestId !== id)
+		this.heap = this.heap.filter((item) => item.contest._id !== id)
 	}
 
 	_bubbleUp(i) {

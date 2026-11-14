@@ -57,6 +57,8 @@ class Bot {
 
 				for (const c of everyContest) {
 					if (!(await this.notificationSchema.findById(c.url))) {
+						c.startTime /= 1000
+						c.duration /= 1000
 						const contest = {
 							_id: c.url,
 							name: c.title,
