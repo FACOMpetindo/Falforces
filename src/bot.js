@@ -1,7 +1,6 @@
 const { Client, GatewayIntentBits, Collection, EmbedBuilder, ActivityType } = require("discord.js")
 const { loadEvents } = require("./handlers/events.js")
 const { loadCommands } = require("./handlers/commands.js")
-const { fetchUpcomingContests } = require("@qatadaazzeh/atcoder-api")
 const I18n = require("./handlers/i18n.js")
 const { msToTime } = require("./utils/functions.js")
 const TEN_MINUTES = 10 * 60 * 1000
@@ -54,26 +53,25 @@ class Bot {
 			this.scheduler.loadContests(contests)
 
 			const fetchContests = async () => {
-				const responseCodeforces = await fetch("https://codeforces.com/api/contest.list")
-				const atCoderData = await fetchUpcomingContests()
-				const codeforcesData = (await responseCodeforces.json()).result.filter((c) => c.phase === "BEFORE")
-				const everyContest = [...atCoderData, ...codeforcesData]
+				const everyContest = await fetch("https://competeapi.vercel.app/contests/upcoming/").then((res) => res.json())
 
 				for (const c of everyContest) {
-					if (!(await this.notificationSchema.findById(c.contestId ?? c.id))) {
-						var startTimeSeconds = Math.floor(new Date(c.contestTime).getTime() / 1000)
+					if (!(await this.notificationSchema.findById(c.url))) {
 						const contest = {
-							_id: c.id ?? c.contestId,
-							name: c.contestName ?? c.name,
-							type: c.contestType ?? c.type,
+							_id: c.url,
+							name: c.title,
+							color:
+								(c.site === "codeforces" && "#C12127") ||
+								(c.site === "codechef" && "#6E3B1B") ||
+								(c.site == "leetcode" && "#FFA116"),
 							data: {
-								startTimeSeconds: c.startTimeSeconds ?? startTimeSeconds,
-								durationSeconds: c.durationSeconds ?? parseDuration(c.contestDuration),
-								url: c.contestUrl ?? `https://codeforces.com/contest/${c.id}`,
+								startTimeSeconds: c.startTime,
+								durationSeconds: c.duration,
+								url: c.url,
 							},
 							notificationTimes: [
-								{ timestamp: (c.startTimeSeconds ?? startTimeSeconds) - ONE_DAY / 1000, sent: false },
-								{ timestamp: (c.startTimeSeconds ?? startTimeSeconds) - ONE_HOUR / 1000, sent: false },
+								{ timestamp: c.startTime - ONE_DAY / 1000, sent: false },
+								{ timestamp: c.startTime - ONE_HOUR / 1000, sent: false },
 							],
 						}
 						await this.notificationSchema.create(contest)
@@ -81,13 +79,6 @@ class Bot {
 					}
 				}
 				console.log("fetched contests")
-			}
-
-			const parseDuration = (str) => {
-				const parts = str.split(":").map(Number)
-				if (parts.length === 2) return parts[0] * 3600 + parts[1] * 60
-				if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
-				return Number(str) * 60
 			}
 
 			await fetchContests()
@@ -240,15 +231,15 @@ class Bot {
 				const channel = guild.channels.cache.get(g.notificationChannel)
 				if (!channel) continue
 
-				const embed = this.createEmbed("#C12127")
+				const embed = this.createEmbed(contest.color)
 					.setTitle(contest.name)
 					.setDescription(
 						this.i18n.get(null, "events.contest_notification", {
 							TIME: `<t:${contest.data.startTimeSeconds}:R>`,
 							START: `<t:${contest.data.startTimeSeconds}:F>`,
 							DURATION: msToTime(contest.data.durationSeconds * 1000),
-							TYPE: contest.type,
-						})
+							LINK: contest.data.url,
+						}),
 					)
 					.setURL(contest.data.url)
 

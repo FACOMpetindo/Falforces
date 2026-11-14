@@ -131,14 +131,14 @@
     },
     "upcoming": {
       "embed": {
-        "title": ":calendar: Próximos Contests do Codeforces e AtCoder",
+        "title": ":calendar: Próximos Contests",
         "field_no_contests": "Nenhum contest futuro encontrado! :thinking:",
-        "field_contest": "**Início:** {START}  :balloon:\n**Link:** {LINK}\n**Duração:** {DURATION}\n**Tipo:** {TYPE}"
+        "field_contest": "**Início:** {START}  :balloon:\n**Link:** {LINK}\n**Duração:** {DURATION}"
       }
     }
   },
   "events": {
-    "contest_notification": "O contest vai começar {TIME}! :balloon:\n\n**Início:** {START}\n**Duração:** {DURATION}\n**Tipo:** {TYPE}"
+    "contest_notification": "O contest vai começar {TIME}! :balloon:\n\n**Início:** {START}\n**Duração:** {DURATION}\n**Link:** {LINK}"
   },
   "words": {
     "statistics": "Estatísticas",

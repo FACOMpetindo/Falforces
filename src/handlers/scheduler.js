@@ -76,8 +76,13 @@ class ReminderScheduler {
 		reminder.sent = true
 		await this.bot.notificationSchema.updateOne(
 			{ _id: contest._id },
-			{ $set: { notificationTimes: contest.notificationTimes } }
+			{ $set: { notificationTimes: contest.notificationTimes } },
 		)
+		
+		if (contest.notificationTimes.every((r) => r.sent)) {
+			this.removeContest(contest._id)
+			await this.bot.notificationSchema.deleteOne({ _id: contest._id })
+		}
 
 		this.scheduleNext()
 	}
